@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Secrets — the important part
+# .env holds your OpenRouter key and Supabase secret key. Never commit it.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+./history
+
+# ---------------------------------------------------------------------------
+# Python / uv
+# NOTE: uv.lock is deliberately NOT ignored. Commit it — it's what makes
+# deploys reproducible, and a missing lockfile means the platform re-resolves
+# and can ship versions you never tested.
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.python-version.local
+
+# ---------------------------------------------------------------------------
+# Node / Vite
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------------------------------------------------------------------------
+# Deploy
+# ---------------------------------------------------------------------------
+.vercel/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
