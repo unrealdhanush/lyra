@@ -44,21 +44,23 @@ from .prompts import (
 
 # Cost shape of one run: stage 2 is the expensive part, because every advisor
 # reads every other advisor's full output — token volume there scales with the
-# square of council size. Four advisors is the sweet spot.
+# square of council size. So advisors are kept on fast, current-gen BUDGET
+# models; the chairman, which does the one genuinely hard job (synthesis across
+# conflicting arguments), gets a strong model. This two-tier split is what
+# keeps a run near single-digit cents instead of ~35c.
 #
-# Spend where it matters: cheap-but-sharp advisors, one strong chairman.
+# Advisors deliberately span providers: four checkpoints of one family produce
+# correlated errors and a peer review that rubber-stamps itself.
 #
-# Deliberately heterogeneous across providers: four checkpoints of the same
-# family produce correlated errors and a peer review that rubber-stamps itself.
-#
-# VERIFY these IDs against openrouter.ai/models before launch — they drift.
+# VERIFY these IDs and prices against openrouter.ai/models before launch —
+# model names and rates drift, and some of these may be stale.
 MODELS: dict[str, list[str]] = {
-    "operator":    ["anthropic/claude-haiku-4.5", "openai/gpt-4.1-mini"],
-    "gravedigger": ["google/gemini-2.5-flash", "anthropic/claude-haiku-4.5"],
-    "distributor": ["openai/gpt-4.1-mini", "google/gemini-2.5-flash"],
-    "why_now":     ["deepseek/deepseek-chat", "openai/gpt-4.1-mini"],
-    "chairman":    ["anthropic/claude-sonnet-4.5", "openai/gpt-4.1"],
-    "preflight":   ["google/gemini-2.5-flash-lite", "openai/gpt-4.1-nano"],
+    "operator":    ["openai/gpt-5.1-mini", "anthropic/claude-haiku-4.5"],
+    "gravedigger": ["google/gemini-3-flash", "openai/gpt-5.1-mini"],
+    "distributor": ["anthropic/claude-haiku-4.5", "google/gemini-3-flash"],
+    "why_now":     ["deepseek/deepseek-chat-v3.1", "openai/gpt-5.1-mini"],
+    "chairman":    ["anthropic/claude-sonnet-4.6", "openai/gpt-5.1"],
+    "preflight":   ["google/gemini-3-flash-lite", "openai/gpt-4.1-nano"],
 }
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"

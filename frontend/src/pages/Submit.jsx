@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { submitIdea } from '../api';
 
 export default function Submit() {
@@ -42,36 +42,11 @@ export default function Submit() {
 
   return (
     <>
-      <div className="hero">
-        <div className="acronym-line">
-          <b>L</b>itigate <b>Y</b>our <b>R</b>iskiest <b>A</b>ssumptions
-        </div>
-        <h1>Put your idea on trial.</h1>
-        <p>
-          Four models with conflicting mandates argue it out, rank each other
-          blind, and a chairman rules — grounded in sourced market data, with
-          unverifiable numbers struck from the record. One free session per
-          visitor.
-        </p>
-      </div>
-
-      <div className="panel-strip">
-        <div className="panel-mini">
-          <div className="name">The Operator</div>
-          <div className="q">Can this be built and kept running?</div>
-        </div>
-        <div className="panel-mini">
-          <div className="name">The Gravedigger</div>
-          <div className="q">Who tried this before, and what killed them?</div>
-        </div>
-        <div className="panel-mini">
-          <div className="name">The Distributor</div>
-          <div className="q">Where do users come from, and who pays?</div>
-        </div>
-        <div className="panel-mini">
-          <div className="name">Why Now</div>
-          <div className="q">What changed to make this possible today?</div>
-        </div>
+      <div className="submit-head">
+        <Link to="/" className="back-link">&larr; LYRA</Link>
+        <h1>State your idea</h1>
+        <p>Who it’s for, the problem, and roughly how. Two or three sentences is
+        plenty — if the panel needs more, it’ll ask before spending your session.</p>
       </div>
 
       <textarea

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
+import Landing from './pages/Landing.jsx';
 import Submit from './pages/Submit.jsx';
 import Run from './pages/Run.jsx';
 import Gallery from './pages/Gallery.jsx';
@@ -54,7 +55,8 @@ export default function App() {
         </nav>
       </header>
       <Routes>
-        <Route path="/" element={<Submit />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/new" element={<Submit />} />
         <Route path="/r/:slug" element={<Run />} />
         <Route path="/docket" element={<Gallery />} />
       </Routes>
