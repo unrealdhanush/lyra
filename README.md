@@ -60,12 +60,20 @@ curl -LsSf https://astral.sh/uv/install.sh | sh     # macOS / Linux
 Then, from `backend/`:
 ```
 uv init --bare --python 3.12
-uv add fastapi "uvicorn[standard]" httpx pydantic supabase
+uv add fastapi "uvicorn[standard]" httpx pydantic supabase python-dotenv
 uv add --dev ruff
 uv python pin 3.12                      # optional: writes .python-version
 
 cp .env.example .env                    # fill it in
 uv run uvicorn app:app --reload
+```
+`app.py` loads `backend/.env` on import, resolved relative to the file rather
+than the working directory. Missing variables fail at startup with a list of
+what's absent, instead of a 500 on the first request.
+
+If any required var is unset you'll see it immediately:
+```
+RuntimeError: Missing environment variables: SUPABASE_URL, GATE_SALT.
 ```
 `--bare` writes only a `pyproject.toml` — no sample `main.py`, no README, no
 git init — which is what you want when adding uv to a directory that already

@@ -2,11 +2,24 @@ import { useEffect, useRef, useState } from 'react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// VITE_ vars are baked in at BUILD time, not read at runtime. If this warns
+// on a deployed site, set VITE_API_URL in Vercel and REDEPLOY — saving the
+// variable alone won't change an already-built bundle.
+if (!import.meta.env.VITE_API_URL && window.location.hostname !== 'localhost') {
+  console.error(
+    'VITE_API_URL is not set. This build is pointing at localhost:8000 and ' +
+      'every request will fail. Set it in Vercel, then redeploy.'
+  );
+}
+
+export const ADMIN_KEY = 'lyra_admin';
+
 async function req(path, opts = {}) {
-  const res = await fetch(`${API}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...opts,
-  });
+  const headers = { 'Content-Type': 'application/json' };
+  const admin = localStorage.getItem(ADMIN_KEY);
+  if (admin) headers['X-Admin-Token'] = admin;
+
+  const res = await fetch(`${API}${path}`, { headers, ...opts });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(body.detail || `Request failed (${res.status})`);

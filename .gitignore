@@ -5,7 +5,7 @@
 .env
 .env.*
 !.env.example
-./history
+*/.env.example
 
 # ---------------------------------------------------------------------------
 # Python / uv
@@ -22,6 +22,7 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 .python-version.local
+.history/
 
 # ---------------------------------------------------------------------------
 # Node / Vite

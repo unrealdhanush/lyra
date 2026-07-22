@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import hmac
 import os
 import secrets
 from contextlib import asynccontextmanager
@@ -45,6 +46,14 @@ REQUIRED_ENV = (
     "GATE_SALT",
 )
 
+
+def supabase_url() -> str:
+    """supabase-py builds {url}/rest/v1/<table>. A trailing slash yields
+    //rest/v1 and an embedded path yields /rest/v1/rest/v1 — both make
+    PostgREST return PGRST125 'Invalid path specified in request URL',
+    which points nowhere near the actual cause. Normalise defensively."""
+    return os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+
 # Background tasks need a strong reference or the GC can cancel them mid-run.
 _TASKS: set[asyncio.Task] = set()
 
@@ -63,6 +72,22 @@ async def lifespan(app: FastAPI):
             f"Missing environment variables: {', '.join(missing)}. "
             f"Expected in {ENV_PATH} (copy .env.example) or the process environment."
         )
+
+    url = supabase_url()
+    if not url.startswith("https://") or "/rest" in url or ".supabase.co" not in url:
+        raise RuntimeError(
+            f"SUPABASE_URL looks malformed: {url!r}\n"
+            "Expected exactly https://<project-ref>.supabase.co — no trailing "
+            "slash, no /rest/v1 suffix. Copy it from Settings > API > Project URL."
+        )
+
+    key = os.environ["SUPABASE_SECRET_KEY"].strip()
+    if key.startswith("sb_publishable_"):
+        raise RuntimeError(
+            "SUPABASE_SECRET_KEY holds a publishable key. The backend needs a "
+            "secret key (sb_secret_...), which bypasses RLS; the publishable "
+            "key would be blocked by the read-only policies."
+        )
     yield
     for t in _TASKS:
         t.cancel()
@@ -70,21 +95,24 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="LYRA", lifespan=lifespan)
 
+# FRONTEND_ORIGINS pins the production origin. FRONTEND_ORIGIN_REGEX is
+# optional and exists for Vercel preview deploys, whose URLs change every
+# push — e.g. https://lyra-.*\.vercel\.app
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        o.strip()
+        o.strip().rstrip("/")
         for o in os.environ.get("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+        if o.strip()
     ],
+    allow_origin_regex=os.environ.get("FRONTEND_ORIGIN_REGEX") or None,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
 def _db() -> Client:
-    return create_client(
-        os.environ["SUPABASE_URL"], os.environ["SUPABASE_SECRET_KEY"]
-    )
+    return create_client(supabase_url(), os.environ["SUPABASE_SECRET_KEY"].strip())
 
 
 def _gate_hash(request: Request) -> str:
@@ -94,6 +122,14 @@ def _gate_hash(request: Request) -> str:
     ip = request.headers.get("x-forwarded-for", request.client.host or "unknown")
     ip = ip.split(",")[0].strip()
     return hashlib.sha256(f"{os.environ['GATE_SALT']}:{ip}".encode()).hexdigest()
+
+
+def _is_admin(request: Request) -> bool:
+    """True when the request carries the admin token. Constant-time compare;
+    admin mode simply doesn't exist unless ADMIN_TOKEN is set in the env."""
+    expected = os.environ.get("ADMIN_TOKEN", "")
+    supplied = request.headers.get("x-admin-token", "")
+    return bool(expected) and bool(supplied) and hmac.compare_digest(supplied, expected)
 
 
 def _resolve_key(byok: Optional[str]) -> tuple[str, str]:
@@ -122,6 +158,12 @@ async def submit_idea(body: SubmitBody, request: Request):
     db = _db()
     api_key, paid_by = _resolve_key(body.byok_key)
     gate = _gate_hash(request)
+
+    # Admin runs use the host key but skip the free-run gate entirely.
+    # paid_by='admin' also keeps them out of the partial unique index
+    # (which only covers 'host' rows), so the DB agrees with this bypass.
+    if paid_by == "host" and _is_admin(request):
+        paid_by = "admin"
 
     # One free host-funded run per gate hash. The unique partial index in the
     # schema enforces this at the DB level too; checking here just gives a
@@ -172,7 +214,7 @@ async def submit_idea(body: SubmitBody, request: Request):
             "clarifications": body.clarifications,
             "status": "researching",
             "status_detail": "Building the market dossier",
-            "gate_hash": gate if paid_by == "host" else None,
+            "gate_hash": gate if paid_by == "host" else None,  # admin/byok rows carry no gate
             "paid_by": paid_by,
             "is_public": False,  # publishing is opt-in, after seeing the result
         })
@@ -283,4 +325,20 @@ async def gallery():
 
 @app.get("/api/health")
 async def health():
-    return {"ok": True}
+    """Verifies the Supabase link, not just that the process is alive.
+    Hit this first after any deploy — it catches a bad URL or key before a
+    user does."""
+    try:
+        _db().table("runs").select("id").limit(1).execute()
+        db_ok = True
+        detail = None
+    except Exception as err:
+        db_ok = False
+        detail = str(err)[:200]
+
+    return {
+        "ok": db_ok,
+        "database": "connected" if db_ok else "unreachable",
+        "detail": detail,
+        "admin_enabled": bool(os.environ.get("ADMIN_TOKEN")),
+    }

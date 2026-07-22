@@ -165,9 +165,10 @@ async def call_json(
 # ---------------------------------------------------------------------------
 
 def _db() -> Client:
+    # Trailing slash / embedded path here surfaces as PostgREST PGRST125.
     return create_client(
-        os.environ["SUPABASE_URL"],
-        os.environ["SUPABASE_SECRET_KEY"],
+        os.environ["SUPABASE_URL"].strip().rstrip("/"),
+        os.environ["SUPABASE_SECRET_KEY"].strip(),
     )
 
 

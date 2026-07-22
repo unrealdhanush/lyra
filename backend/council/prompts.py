@@ -269,6 +269,13 @@ number, percentage, market size, or dollar figure that does not appear there is
 unsupported and must be flagged, even if it sounds plausible. Especially if it
 sounds plausible. Do not flag qualitative judgements — only quantities.
 
+Two things are OUT OF SCOPE for this pass and must never be flagged:
+- The "Unknowns they flagged" line. Those are requests for data the assessment
+  says it lacks. Being absent from the dossier is the whole point of them.
+- The "Counter-argument they acknowledged" line, which states a view the author
+  does not hold.
+Flag only assertions the author is making as fact in their own argument.
+
 ## The crux
 Identify the single disagreement between these assessments that actually
 determines the answer. Not the biggest disagreement — the most decisive one.
@@ -352,7 +359,12 @@ Return only valid JSON, no fence:
 def chairman_prompt(
     idea: str, dossier: Dossier, opinions_block: str, reviews_block: str
 ) -> tuple[str, str]:
+    from datetime import date
+
     user = f"""\
+Today's date is {date.today().isoformat()}. Any dates you propose in the
+falsifiable tests must be in the future.
+
 ## The idea
 {idea}
 

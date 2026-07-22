@@ -55,6 +55,25 @@ export default function Submit() {
         </p>
       </div>
 
+      <div className="panel-strip">
+        <div className="panel-mini">
+          <div className="name">The Operator</div>
+          <div className="q">Can this be built and kept running?</div>
+        </div>
+        <div className="panel-mini">
+          <div className="name">The Gravedigger</div>
+          <div className="q">Who tried this before, and what killed them?</div>
+        </div>
+        <div className="panel-mini">
+          <div className="name">The Distributor</div>
+          <div className="q">Where do users come from, and who pays?</div>
+        </div>
+        <div className="panel-mini">
+          <div className="name">Why Now</div>
+          <div className="q">What changed to make this possible today?</div>
+        </div>
+      </div>
+
       <textarea
         value={idea}
         onChange={(e) => setIdea(e.target.value)}
