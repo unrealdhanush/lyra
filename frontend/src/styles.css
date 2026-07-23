@@ -712,19 +712,46 @@
   .row-actions:focus-within { opacity: 1; }
   @media (hover: none) { .row-actions { opacity: 1; } }
   
-  .mini-btn {
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+  .icon-btn {
+    position: relative;
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
     color: var(--ink-2); background: rgba(11, 14, 20, 0.7);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-    border: 1px solid var(--rule); border-radius: 5px;
-    padding: 4px 10px; cursor: pointer; transition: all 0.2s;
+    border: 1px solid var(--rule); border-radius: 7px;
+    cursor: pointer; transition: all 0.2s var(--ease);
   }
-  .mini-btn:hover { color: var(--ink); border-color: rgba(255, 255, 255, 0.25); }
-  .mini-btn.danger:hover {
-    color: var(--walk); border-color: rgba(248, 113, 113, 0.5);
+  .icon-btn svg { width: 15px; height: 15px; }
+  .icon-btn:hover {
+    color: var(--ink); border-color: rgba(255, 255, 255, 0.28);
+    transform: translateY(-1px);
+  }
+  .icon-btn.danger:hover {
+    color: var(--walk); border-color: rgba(248, 113, 113, 0.55);
     background: var(--walk-tint);
+    box-shadow: 0 0 16px rgba(248, 113, 113, 0.18);
   }
-  .mini-btn:disabled { opacity: 0.4; cursor: default; }
+  .icon-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+  
+  /* tooltip: rises in on hover or keyboard focus */
+  .icon-btn::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 9px); left: 50%;
+    transform: translate(-50%, 5px);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em;
+    white-space: nowrap; color: var(--ink);
+    background: rgba(11, 14, 20, 0.95);
+    border: 1px solid var(--glass-border); border-radius: 6px;
+    padding: 5px 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    opacity: 0; pointer-events: none; z-index: 60;
+    transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
+  }
+  .icon-btn:hover::after,
+  .icon-btn:focus-visible::after {
+    opacity: 1; transform: translate(-50%, 0);
+  }
+  .icon-btn:disabled::after { display: none; }
   
   .state-chip {
     font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
