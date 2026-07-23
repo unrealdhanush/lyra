@@ -906,3 +906,8 @@
     padding: 2px 8px; line-height: 1.5;
   }
   .state-chip.bad { color: var(--walk); border-color: rgba(248, 113, 113, 0.4); background: var(--walk-tint); }
+  
+  /* stale-while-revalidate: the list dims during a scope switch instead of
+     unmounting into a loading screen */
+  .docket-list { transition: opacity 0.25s var(--ease); }
+  .docket-list.updating { opacity: 0.55; pointer-events: none; }
