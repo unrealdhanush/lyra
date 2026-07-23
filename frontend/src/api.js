@@ -40,7 +40,13 @@ export const publishRun = (slug, isPublic) =>
     body: JSON.stringify({ public: isPublic }),
   });
 
-export const getGallery = () => req('/api/gallery');
+export const getGallery = (all = false) =>
+  req(`/api/gallery${all ? '?scope=all' : ''}`);
+
+export const deleteRun = (slug) =>
+  req(`/api/admin/runs/${slug}`, { method: 'DELETE' });
+
+export const getPanel = () => req('/api/panel');
 
 const DONE = new Set(['complete', 'failed']);
 
