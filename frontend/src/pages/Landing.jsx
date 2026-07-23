@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Reveal } from '../components.jsx';
+import { Reveal, shortModel } from '../components.jsx';
+import { getPanel } from '../api';
 
 const MEMBERS = [
   {
@@ -29,13 +31,21 @@ const MEMBERS = [
 ];
 
 const STEPS = [
-  { n: '01', t: 'State your idea', d: 'Who it\'s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
+  { n: '01', t: 'State your idea', d: 'Who it\u2019s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
   { n: '02', t: 'The panel deliberates', d: 'Four advisors assess it in parallel, each from their own mandate. You watch them land one by one.' },
-  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\' arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
-  { n: '04', t: 'The chair rules', d: 'A verdict that commits - build, test first, reshape, or walk away with falsifiable tests you can run in a week.' },
+  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\u2019 arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
+  { n: '04', t: 'The chair rules', d: 'A verdict that commits \u2014 build, test first, reshape, or walk away \u2014 with falsifiable tests you can run in a week.' },
 ];
 
 export default function Landing() {
+  // Pulled live from the backend so the roster can't drift from the config.
+  const [panel, setPanel] = useState(null);
+  useEffect(() => {
+    getPanel().then(setPanel).catch(() => setPanel(null));
+  }, []);
+
+  const modelFor = (i) => panel?.advisors?.[i];
+
   return (
     <>
       <section className="lp-hero">
@@ -47,8 +57,8 @@ export default function Landing() {
         <h1>Put your idea on trial.</h1>
         <p className="lp-lede">
           Four AI advisors with conflicting mandates argue your startup idea out,
-          rank each other blind, and a chairman rules. Grounded in what can be
-          sourced, with unverifiable numbers struck from the record.
+          rank each other blind, and a chairman rules \u2014 with every unverifiable
+          number struck from the record before the ruling lands.
         </p>
         <Link to="/new" className="btn btn-lg">Begin a session &rarr;</Link>
         <div className="lp-free">One free session, no account. About 90 seconds.</div>
@@ -60,9 +70,18 @@ export default function Landing() {
           <h2 className="lp-h2">Four advisors who disagree on purpose.</h2>
           <p className="lp-sub">
             Each one optimizes for a single thing and is forbidden from caring about
-            the rest. That tension is the design - it's what stops four models
+            the rest. That tension is the design \u2014 it\u2019s what stops four models
             agreeing with you in four different ways.
           </p>
+          {panel && (
+            <p className="panel-note">
+              Four different model families, on purpose \u2014 four checkpoints of one
+              family produce correlated errors and a peer review that rubber-stamps
+              itself. The chair is <b>{shortModel(panel.chairman.primary)}</b>, the
+              strongest of the five, because synthesizing across conflicting
+              arguments is the hardest job in the pipeline.
+            </p>
+          )}
         </Reveal>
         <div className="member-grid">
           {MEMBERS.map((m, i) => (
@@ -72,6 +91,15 @@ export default function Landing() {
                 <p className="member-q">{m.q}</p>
                 <p className="member-body">{m.body}</p>
                 <p className="member-ignores">{m.ignores}</p>
+                {modelFor(i) && (
+                  <p
+                    className="member-model"
+                    title={`Falls back to: ${modelFor(i).fallbacks.join(', ')}`}
+                  >
+                    <span className="mm-dot" />
+                    {shortModel(modelFor(i).primary)}
+                  </p>
+                )}
               </article>
             </Reveal>
           ))}
@@ -100,12 +128,14 @@ export default function Landing() {
       <section className="lp-section lp-promise">
         <Reveal>
         <div className="kicker">The rule that makes it trustworthy</div>
-        <h2 className="lp-h2">It won't make up numbers to sound sure.</h2>
+        <h2 className="lp-h2">It won\u2019t make up numbers to sound sure.</h2>
         <p className="lp-sub">
-          Facts and judgment run on separate tracks. Any figure an advisor cites
-          is checked against sourced data during peer review; anything unverifiable
-          is flagged by the panel and struck from the ruling. An empty market shows
-          as empty, not padded with an invented total.
+          Advisors may only cite figures that appear in the case record. During blind
+          peer review each one checks the others\u2019 numbers against it, and anything
+          two or more reviewers flag as unsupported is struck from the ruling
+          entirely \u2014 not softened into it. Today the record starts empty, so
+          invented figures have nowhere to hide. Sourced competitor dossiers are
+          what\u2019s next.
         </p>
         <Link to="/new" className="btn btn-lg">Put an idea on trial &rarr;</Link>
         </Reveal>
