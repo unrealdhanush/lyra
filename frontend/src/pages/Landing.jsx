@@ -29,10 +29,10 @@ const MEMBERS = [
 ];
 
 const STEPS = [
-  { n: '01', t: 'State your idea', d: 'Who it\u2019s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
+  { n: '01', t: 'State your idea', d: 'Who it\'s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
   { n: '02', t: 'The panel deliberates', d: 'Four advisors assess it in parallel, each from their own mandate. You watch them land one by one.' },
-  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\u2019 arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
-  { n: '04', t: 'The chair rules', d: 'A verdict that commits \u2014 build, test first, reshape, or walk away \u2014 with falsifiable tests you can run in a week.' },
+  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\' arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
+  { n: '04', t: 'The chair rules', d: 'A verdict that commits - build, test first, reshape, or walk away with falsifiable tests you can run in a week.' },
 ];
 
 export default function Landing() {
