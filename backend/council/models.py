@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Annotated, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 AdvisorRole = Literal["operator", "gravedigger", "distributor", "why_now"]
 
@@ -107,6 +107,11 @@ class FalsifiableTest(BaseModel):
     kills_idea_if: str
 
 
+class DiscardedClaim(BaseModel):
+    claim: str
+    note: Optional[str] = None
+
+
 class VerdictPayload(BaseModel):
     headline: str
     conviction: Literal["build", "test_first", "reshape", "walk_away"]
@@ -116,7 +121,13 @@ class VerdictPayload(BaseModel):
     strongest_case_against: str
     falsifiable_tests: list[FalsifiableTest]
     data_gaps: list[str] = []
-    discarded_claims: list[str] = []
+    discarded_claims: list[DiscardedClaim] = []
+
+    @field_validator("discarded_claims", mode="before")
+    @classmethod
+    def _coerce_claims(cls, v):
+        # Older chairman outputs returned bare strings; accept both shapes.
+        return [{"claim": x} if isinstance(x, str) else x for x in (v or [])]
 
 
 class PreflightPayload(BaseModel):

@@ -153,7 +153,13 @@ ROLES: dict[AdvisorRole, RoleSpec] = {
             "You care only about how a stranger who is not the founder's friend ends "
             "up using this, repeatedly, and whether anyone pays. You are hostile to "
             'any plan that reduces to "we get a small slice of a large market". You '
-            "want a named first thousand users and a specific reason they show up."
+            "want a named first thousand users and a specific reason they show up. "
+            "A three-sentence idea submission will rarely name a channel — that is "
+            "not the failure you are scoring. Identify the best plausible channel "
+            "for this category and buyer yourself, then judge how reachable the "
+            "first hundred users are through it. Reserve your lowest scores for "
+            "ideas whose buyers are structurally hard to reach or unwilling, not "
+            "for founders who have not yet written a channel list."
         ),
         ignores=(
             "technical feasibility",
@@ -176,7 +182,14 @@ ROLES: dict[AdvisorRole, RoleSpec] = {
             "assess whether those things are actually true right now and what recently "
             'changed to make them true. A conclusion of "nothing has changed, this '
             'could have been built in 2016 and wasn\'t" is a legitimate and valuable '
-            "output from you. Do not cheerlead. Enthusiasm without a mechanism is noise."
+            "output from you. Do not cheerlead. Enthusiasm without a mechanism is noise. "
+            "When the dossier is empty you cannot ASSERT that an enabling change "
+            "occurred — asserted mechanisms without sources get struck in review "
+            "and your verdict collapses with them. Instead, place each candidate "
+            "enabling change in unknowns_that_would_change_my_mind, phrased so it "
+            "could be checked, and reason conditionally: 'IF portal data became "
+            "machine-readable since the last failures, THEN timing improves.' "
+            "Conditional timing logic survives review; confident claims do not."
         ),
         ignores=(
             "listing risks — three other advisors are covering that",
@@ -352,7 +365,9 @@ Return only valid JSON, no fence:
     {{ "test": "what to do", "timebox": "e.g. 3 days", "cost": "e.g. under $50", "kills_idea_if": "the specific result that should stop you" }}
   ],
   "data_gaps": ["what the dossier could not establish, and why it mattered"],
-  "discarded_claims": ["claims dropped for lack of support"]
+  "discarded_claims": [
+    {{ "claim": "the struck claim quoted verbatim, nothing else", "note": "one short clause on who flagged it or what its removal changes, or null" }}
+  ]
 }}"""
 
 

@@ -630,74 +630,115 @@
   .print-head { display: none; }
   
   @media print {
+    /* ---------------------------------------------------------------------
+       Repaint the palette for paper. Every color in the app derives from
+       these variables, so overriding them here fixes ELEMENTS I HAVEN'T
+       LISTED — including any added later. The dark theme's --ink-2 (#a2aab6)
+       and --ink-3 (#6d7480) are slate blues tuned for a dark background;
+       on white they print as unreadable pale blue. This is the root fix.
+       --------------------------------------------------------------------- */
+    :root {
+      --bg: #fff;
+      --bg-2: #fff;
+      --ink: #111;
+      --ink-2: #2e2e2e;
+      --ink-3: #5c5c5c;
+      --rule: #d0d0d0;
+  
+      --glass: transparent;
+      --glass-strong: transparent;
+      --glass-border: #d0d0d0;
+      --glass-highlight: transparent;
+  
+      --chamber: #0a6b4a;
+      --chamber-deep: #0a6b4a;
+      --chamber-tint: transparent;
+      --violet: transparent;
+  
+      --build: #0a6b4a;   --build-tint: transparent;
+      --test: #8a5a00;    --test-tint: transparent;
+      --reshape: #1e4f8a; --reshape-tint: transparent;
+      --walk: #9b2c1b;    --walk-tint: transparent;
+    }
+  
     @page { margin: 16mm 14mm; }
   
-    html, body {
-      background: #fff !important;
-      color: #111 !important;
-    }
+    html, body { background: #fff !important; color: #111 !important; }
+    body { font-size: 10.5pt; line-height: 1.55; }
     body::before { display: none !important; }        /* grain */
-    .orb, .masthead, .session-footer, .stage-rail, .pipe,
-    .status-line, .btn, .back-link { display: none !important; }
+  
+    /* screen-only chrome */
+    .orb, .masthead, .session-footer, .pipe, .status-line,
+    .btn, .back-link, .no-print, .adv-model,
+    .docket-tools, .row-actions { display: none !important; }
   
     .shell, .measure { max-width: none; padding: 0; margin: 0; }
+    p, li { orphans: 3; widows: 3; }
   
     .print-head {
-      display: block; font-family: var(--mono); font-size: 9pt; color: #666;
-      border-bottom: 1px solid #ccc; padding-bottom: 6pt; margin-bottom: 14pt;
+      display: block; font-family: var(--mono); font-size: 9pt; color: #5c5c5c;
+      border-bottom: 1px solid #d0d0d0; padding-bottom: 6pt; margin-bottom: 14pt;
     }
   
-    body { font-size: 10.5pt; line-height: 1.55; }
-    p, li { orphans: 3; widows: 3; }
-    .no-print { display: none !important; }
-  
-    /* flatten every glass surface to paper */
-    .glass, .adv, .case-box, .member, .clarify, .review-strip, .test-row, .ruling,
-    .gallery-row {
+    /* glass -> paper */
+    .glass, .adv, .case-box, .member, .clarify, .review-strip, .test-row,
+    .ruling, .gallery-row {
       background: #fff !important;
       -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
-      border: 1px solid #d4d4d4 !important;
+      border: 1px solid #d0d0d0 !important;
       box-shadow: none !important;
       break-inside: avoid; page-break-inside: avoid;
     }
+    .ruling::before, .member::before { display: none !important; }
   
-    /* Advisor cards routinely run longer than a page. Forcing them whole
-       produces near-blank pages, so let them flow — but never separate a
-       card's header from the first lines of its body. */
-    .adv {
-      break-inside: auto !important; page-break-inside: auto !important;
-    }
+    /* Advisor cards run longer than a page; forcing them whole leaves near-
+       blank pages. Let them flow, but keep each header with its first lines. */
+    .adv { break-inside: auto !important; page-break-inside: auto !important; }
     .adv summary { break-after: avoid-page; }
-    .ruling::before { display: none !important; }
   
-    h1, h2, h3, h4, .adv-role, .step-t { color: #111 !important; }
-    .adv-argument, .adv-headline, .case-box p, .lp-sub, .review-body,
-    .review-body p, .record-notes, .gap-list li,
-    .adv-unknowns ul, .adv-unknowns li, .g-verdict { color: #333 !important; }
-    .adv-concede, .review-note, .adv-charge { color: #555 !important; }
-    .kicker, .label, .adv-meta, .test-row .meta,
-    .session-head .case-no { color: #777 !important; }
+    /* text: explicit floors, since some rules set color directly */
+    h1, h2, h3, h4, .adv-role, .step-t, .g-idea, .review-body b { color: #111 !important; }
+    .adv-argument, .adv-headline, .case-box p, .lp-sub, .lp-lede,
+    .review-body, .review-body p, .record-notes, .g-verdict,
+    .gap-list li, .struck-list li,
+    .adv-unknowns, .adv-unknowns ul, .adv-unknowns li { color: #2e2e2e !important; }
+    .adv-concede, .review-note, .adv-charge, .member-ignores,
+    .struck-note { color: #4a4a4a !important; }
+    .kicker, .label, .adv-meta, .test-row .meta, .step-d,
+    .session-head .case-no, .g-meta, .field-note { color: #5c5c5c !important; }
   
-    /* summary chip duplicates the full model id printed in the card body */
-    .adv-model { display: none !important; }
+    /* list markers inherit the slate blues otherwise */
+    li::marker { color: #5c5c5c !important; }
+    .struck-list li::marker { color: #9b2c1b !important; }
   
-    /* the blind-review fold prints as a section, not a widget */
+    /* gradient-clipped display type prints INVISIBLE without this */
+    .lp-hero h1 {
+      background: none !important;
+      -webkit-text-fill-color: #111 !important;
+      color: #111 !important;
+    }
+  
+    /* glows are meaningless on paper and muddy the ink */
+    .acronym-line b, .step-n, .pipe-label, .stage-rail .stage.active,
+    .status-line { text-shadow: none !important; }
+  
+    /* blind-review fold prints as a section header, not a widget */
     .review-fold > summary {
       list-style: none;
       font-family: var(--mono); font-size: 9.5pt; letter-spacing: 0.08em;
-      text-transform: uppercase; color: #777 !important;
+      text-transform: uppercase; color: #5c5c5c !important;
       margin-bottom: 6pt;
     }
     .review-fold > summary::marker { content: ''; }
     .review-fold > summary::-webkit-details-marker { display: none; }
-    .review-body b { color: #111 !important; }
   
-    .crux-pull { border-top: 1px solid #ccc !important; }
+    .crux-pull { border-top: 1px solid #d0d0d0 !important; }
   
-    /* verdict stamp: outline only, no glow, no animation */
+    /* verdict stamp: outline only */
     .stamp {
       background: #fff !important; box-shadow: none !important;
       animation: none !important; transform: none !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
     }
     .stamp-ring { display: none !important; }
     .stamp.build      { color: #0a6b4a !important; border-color: #0a6b4a !important; }
@@ -705,94 +746,42 @@
     .stamp.reshape    { color: #1e4f8a !important; border-color: #1e4f8a !important; }
     .stamp.walk_away  { color: #9b2c1b !important; border-color: #9b2c1b !important; }
   
-    .test-row { border-left: 3px solid #0a6b4a !important; }
-    .test-row .kill, .struck-list li::marker { color: #9b2c1b !important; }
+    /* verdict chips: outline, readable ink */
+    .chip {
+      background: #fff !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    }
+    .chip.strong_yes, .chip.yes { color: #0a6b4a !important; border-color: #0a6b4a !important; }
+    .chip.mixed { color: #8a5a00 !important; border-color: #8a5a00 !important; }
+    .chip.no, .chip.strong_no { color: #9b2c1b !important; border-color: #9b2c1b !important; }
+  
+    .test-row {
+      border-left: 3px solid #0a6b4a !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    }
+    .test-row .kill { color: #9b2c1b !important; }
     .flagged { text-decoration-color: #9b2c1b !important; }
   
-    .score-track { background: #e0e0e0 !important; }
-    .score-fill { background: #0a6b4a !important; box-shadow: none !important; animation: none !important; }
-    .chip { background: #fff !important; }
+    /* score bar reads as a filled bar only if backgrounds print */
+    .score-track {
+      background: #e4e4e4 !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    }
+    .score-fill {
+      background: #0a6b4a !important; box-shadow: none !important;
+      animation: none !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    }
+    .score-num, .score-den { color: #2e2e2e !important; }
   
-    /* expanded folds print as plain sections */
     .adv summary, .review-fold summary { cursor: default; }
-    .adv[open] summary { border-bottom: 1px solid #d4d4d4 !important; }
-  
+    .adv[open] summary { border-bottom: 1px solid #d0d0d0 !important; }
     .ruling, .tests, .panel { break-inside: auto; }
     .ruling h2 { break-after: avoid; }
     a { color: #111 !important; text-decoration: none; }
     .rv { opacity: 1 !important; transform: none !important; }
   }
   
-  /* ---- docket admin controls ---- */
-  .docket-tools { display: flex; gap: 8px; margin: 0 0 18px; }
-  .scope-btn {
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
-    color: var(--ink-3); background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--rule); border-radius: 6px;
-    padding: 5px 12px; cursor: pointer; transition: all 0.2s;
-  }
-  .scope-btn:hover { color: var(--ink-2); }
-  .scope-btn.on {
-    color: var(--chamber); border-color: rgba(52, 211, 153, 0.4);
-    background: var(--chamber-tint);
-  }
   
-  .gallery-row { position: relative; }
-  .row-actions {
-    position: absolute; top: 16px; right: 16px;
-    display: flex; gap: 8px; opacity: 0;
-    transition: opacity 0.2s var(--ease);
-  }
-  .gallery-row:hover .row-actions,
-  .row-actions:focus-within { opacity: 1; }
-  @media (hover: none) { .row-actions { opacity: 1; } }
-  
-  .icon-btn {
-    position: relative;
-    width: 32px; height: 32px;
-    display: inline-flex; align-items: center; justify-content: center;
-    color: var(--ink-2); background: rgba(11, 14, 20, 0.7);
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-    border: 1px solid var(--rule); border-radius: 7px;
-    cursor: pointer; transition: all 0.2s var(--ease);
-  }
-  .icon-btn svg { width: 15px; height: 15px; }
-  .icon-btn:hover {
-    color: var(--ink); border-color: rgba(255, 255, 255, 0.28);
-    transform: translateY(-1px);
-  }
-  .icon-btn.danger:hover {
-    color: var(--walk); border-color: rgba(248, 113, 113, 0.55);
-    background: var(--walk-tint);
-    box-shadow: 0 0 16px rgba(248, 113, 113, 0.18);
-  }
-  .icon-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
-  
-  /* tooltip: rises in on hover or keyboard focus */
-  .icon-btn::after {
-    content: attr(data-tip);
-    position: absolute; bottom: calc(100% + 9px); left: 50%;
-    transform: translate(-50%, 5px);
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em;
-    white-space: nowrap; color: var(--ink);
-    background: rgba(11, 14, 20, 0.95);
-    border: 1px solid var(--glass-border); border-radius: 6px;
-    padding: 5px 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    opacity: 0; pointer-events: none; z-index: 60;
-    transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
-  }
-  .icon-btn:hover::after,
-  .icon-btn:focus-visible::after {
-    opacity: 1; transform: translate(-50%, 0);
-  }
-  .icon-btn:disabled::after { display: none; }
-  
-  .state-chip {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
-    color: var(--ink-3); border: 1px solid var(--rule); border-radius: 4px;
-    padding: 1px 7px; margin-left: 10px;
-  }
-  .state-chip.bad { color: var(--walk); border-color: rgba(248, 113, 113, 0.4); }
-  
-  @media print { .docket-tools, .row-actions { display: none !important; } }
+  /* annotation on a struck claim: legible, not struck */
+  .struck-note { color: var(--ink-3); font-size: 13px; }

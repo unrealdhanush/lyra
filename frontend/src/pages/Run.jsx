@@ -64,11 +64,16 @@ function Ruling({ verdict }) {
             <div className="note-block">
               <span className="label">Struck from the record</span>
               <ul className="struck-list">
-                {v.discarded_claims.map((c, i) => (
-                  <li key={i}>
-                    <span className="flagged">{c}</span>
-                  </li>
-                ))}
+                {v.discarded_claims.map((c, i) => {
+                  const claim = typeof c === 'string' ? c : c.claim;
+                  const note = typeof c === 'object' && c !== null ? c.note : null;
+                  return (
+                    <li key={i}>
+                      <span className="flagged">{claim}</span>
+                      {note && <span className="struck-note"> — {note}</span>}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
