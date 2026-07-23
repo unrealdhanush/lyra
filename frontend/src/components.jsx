@@ -37,6 +37,44 @@ export function Reveal({ children, delay = 0, className = '' }) {
   );
 }
 
+const STAGES = [
+  { key: 'researching', label: 'Research', sub: 'building the dossier' },
+  { key: 'deliberating', label: 'Deliberation', sub: 'four advisors, in parallel' },
+  { key: 'reviewing', label: 'Review', sub: 'ranking each other, blind' },
+  { key: 'synthesizing', label: 'Verdict', sub: 'the chair synthesizes' },
+];
+
+/** The query loop as a connected pipeline: filled nodes behind, a glowing
+ * pulse on the current stage, a traveling shimmer on the segment in flight. */
+export function Pipeline({ status }) {
+  const order = STAGES.map((s) => s.key);
+  const cur = order.indexOf(status);
+  const done = status === 'complete';
+
+  return (
+    <div className="pipe" role="progressbar" aria-valuenow={done ? 4 : cur + 1} aria-valuemin={0} aria-valuemax={4}>
+      {STAGES.map((s, i) => {
+        const state = done || (cur !== -1 && i < cur) ? 'done' : i === cur ? 'active' : 'todo';
+        const segState = done || (cur !== -1 && i < cur) ? 'done' : i === cur ? 'active' : 'todo';
+        return (
+          <div className={`pipe-stage ${state}`} key={s.key}>
+            {i > 0 && <span className={`pipe-seg ${segState}`} aria-hidden="true" />}
+            <span className="pipe-node" aria-hidden="true">
+              {state === 'done' ? (
+                <svg viewBox="0 0 12 12" className="pipe-check"><path d="M2.5 6.2 L5 8.7 L9.5 3.6" /></svg>
+              ) : (
+                <span className="pipe-num">{i + 1}</span>
+              )}
+            </span>
+            <span className="pipe-label">{s.label}</span>
+            <span className="pipe-sub">{s.sub}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export const ROLE_META = {
   operator: {
     title: 'The Operator',
@@ -73,7 +111,16 @@ export function Stamp({ conviction, mini }) {
     reshape: 'Reshape',
     walk_away: 'Walk away',
   }[conviction];
-  return <span className={`stamp ${conviction}${mini ? ' mini' : ''}`}>{label}</span>;
+
+  if (mini) return <span className={`stamp ${conviction} mini`}>{label}</span>;
+
+  // keyed on conviction so the slam replays if the verdict ever re-renders
+  return (
+    <span className="stamp-wrap" key={conviction}>
+      <span className={`stamp ${conviction}`}>{label}</span>
+      <span className={`stamp-ring ${conviction}`} aria-hidden="true" />
+    </span>
+  );
 }
 
 export function ScoreBar({ score, dimension }) {
@@ -83,7 +130,7 @@ export function ScoreBar({ score, dimension }) {
         <span className="score-fill" style={{ width: `${score * 10}%` }} />
       </span>
       <span className="score-num">
-        {score}<span className="score-den">/10 {dimension}</span>
+        {score}<span className="score-den">/10 {String(dimension).toLowerCase()}</span>
       </span>
     </span>
   );
@@ -129,6 +176,9 @@ export function AdvisorRow({ role, opinion, live }) {
         <span className="adv-line">
           <span className="adv-role">{meta.title}</span>
           <span className={`chip ${opinion.verdict}`}>{VERDICT_LABEL[opinion.verdict]}</span>
+          <span className="adv-model" title={`Answered by ${opinion.model}`}>
+            {shortModel(opinion.model)}
+          </span>
           {score && <ScoreBar score={score.score} dimension={score.dimension} />}
         </span>
         <span className="adv-headline">{opinion.headline}</span>
@@ -154,6 +204,11 @@ export function AdvisorRow({ role, opinion, live }) {
       </div>
     </details>
   );
+}
+
+/** 'anthropic/claude-haiku-4.5' -> 'claude-haiku-4.5' */
+export function shortModel(id) {
+  return String(id || '').split('/').pop();
 }
 
 export function fmtCost(microUsd) {

@@ -30,7 +30,9 @@ from pydantic import BaseModel, Field
 from supabase import Client, create_client
 
 from council.models import Dossier
-from council.orchestrator import SpendCapError, preflight, run_council
+from council.models import ADVISOR_ROLES
+from council.orchestrator import MODELS, SpendCapError, preflight, run_council
+from council.prompts import ROLES
 
 # Resolved relative to this file, so it works no matter which directory you
 # launch from. Must run before the CORS config below reads FRONTEND_ORIGINS.
@@ -308,19 +310,64 @@ async def publish_run(slug: str, body: PublishBody):
     return {"is_public": body.public}
 
 
-@app.get("/api/gallery")
-async def gallery():
+@app.delete("/api/admin/runs/{slug}")
+async def admin_delete_run(slug: str, request: Request):
+    """Admin-only, and deliberately NOT available to mere slug-holders: a
+    shared session link circulates, and anyone holding it can already view —
+    but only the operator should be able to destroy. Deletes the run and,
+    via ON DELETE CASCADE, its opinions, reviews, verdict, and dossier rows.
+    The share URL 404s permanently."""
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin token required.")
     db = _db()
-    rows = (
-        db.table("runs")
-        .select("share_slug, idea_refined, idea_raw, created_at, verdicts(headline, conviction)")
-        .eq("is_public", True)
-        .eq("status", "complete")
-        .order("created_at", desc=True)
-        .limit(50)
-        .execute()
-    ).data
+    res = db.table("runs").delete().eq("share_slug", slug).execute()
+    if not res.data:
+        raise HTTPException(404, "No such session.")
+    return {"deleted": True, "share_slug": slug}
+
+
+@app.get("/api/gallery")
+async def gallery(request: Request, scope: str = "public"):
+    db = _db()
+    q = db.table("runs").select(
+        "share_slug, idea_refined, idea_raw, created_at, is_public, status, "
+        "verdicts(headline, conviction)"
+    )
+    if scope == "all":
+        # Admin housekeeping view: every session — private, failed,
+        # in-flight — so test runs can be cleared before launch.
+        if not _is_admin(request):
+            raise HTTPException(403, "Admin token required.")
+        rows = q.order("created_at", desc=True).limit(200).execute().data
+    else:
+        rows = (
+            q.eq("is_public", True)
+            .eq("status", "complete")
+            .order("created_at", desc=True)
+            .limit(50)
+            .execute()
+            .data
+        )
     return {"runs": rows}
+
+
+@app.get("/api/panel")
+async def panel():
+    """Who staffs each seat. Read live from the orchestrator config so the
+    landing page can never claim a model the council isn't actually using."""
+    return {
+        "advisors": [
+            {
+                "role": r,
+                "title": ROLES[r].title,
+                "primary": MODELS[r][0],
+                "fallbacks": MODELS[r][1:],
+            }
+            for r in ADVISOR_ROLES
+        ],
+        "chairman": {"primary": MODELS["chairman"][0], "fallbacks": MODELS["chairman"][1:]},
+        "preflight": {"primary": MODELS["preflight"][0], "fallbacks": MODELS["preflight"][1:]},
+    }
 
 
 @app.get("/api/health")

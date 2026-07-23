@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useRun, publishRun } from '../api';
-import { AdvisorRow, ROLE_META, ROLE_ORDER, Stamp, fmtCost } from '../components.jsx';
+import { AdvisorRow, Pipeline, ROLE_META, ROLE_ORDER, Stamp, fmtCost } from '../components.jsx';
 
-const STAGES = [
-  { key: 'researching', label: 'Research' },
-  { key: 'deliberating', label: 'Deliberation' },
-  { key: 'reviewing', label: 'Review' },
-  { key: 'synthesizing', label: 'Verdict' },
-];
+/** Browsers hide the contents of a closed <details> from print, so open
+ * everything first, print, then restore exactly what the reader had open. */
+function printSession() {
+  const folds = Array.from(document.querySelectorAll('details'));
+  const was = folds.map((d) => d.open);
+  folds.forEach((d) => (d.open = true));
 
-function stageClass(stageKey, status) {
-  const order = STAGES.map((s) => s.key);
-  const cur = order.indexOf(status);
-  const idx = order.indexOf(stageKey);
-  if (idx === cur) return 'stage active';
-  if (cur === -1 || idx < cur) return 'stage done';
-  return 'stage';
+  const restore = () => {
+    folds.forEach((d, i) => (d.open = was[i]));
+    window.removeEventListener('afterprint', restore);
+  };
+  window.addEventListener('afterprint', restore);
+
+  // let layout settle with the folds expanded before the print snapshot
+  setTimeout(() => window.print(), 60);
 }
 
 function Ruling({ verdict }) {
@@ -121,6 +122,10 @@ export default function Run() {
 
   return (
     <>
+      <div className="print-head" aria-hidden="true">
+        LYRA — Litigate Your Riskiest Assumptions · lyra session {slug}
+      </div>
+
       <div className="session-head">
         <div className="case-no">Session {slug}</div>
         <h1>{run.idea_refined || run.idea_raw}</h1>
@@ -132,13 +137,7 @@ export default function Run() {
         )}
       </div>
 
-      {live && (
-        <div className="stage-rail">
-          {STAGES.map((s) => (
-            <div key={s.key} className={stageClass(s.key, run.status)}>{s.label}</div>
-          ))}
-        </div>
-      )}
+      {live && <Pipeline status={run.status} />}
 
       {run.status === 'failed' && (
         <div className="error-note">{run.error || 'The session failed.'}</div>
@@ -180,6 +179,9 @@ export default function Run() {
             </button>{' '}
             <button className="btn btn-quiet" onClick={togglePublish} disabled={pubBusy}>
               {run.is_public ? 'Remove from the docket' : 'Publish to the docket'}
+            </button>{' '}
+            <button className="btn btn-quiet" onClick={printSession}>
+              Export PDF
             </button>
           </div>
           <div className="cost">
