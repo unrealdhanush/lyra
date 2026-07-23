@@ -52,7 +52,10 @@
     font-family: var(--sans);
     font-size: 16px;
     line-height: 1.6;
+    /* grain is a background LAYER, not an element: backgrounds cannot be
+       included in a selection range, in any browser. */
     background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E"),
       radial-gradient(900px 600px at 12% -8%, rgba(52, 211, 153, 0.10), transparent 60%),
       radial-gradient(1000px 700px at 95% 15%, rgba(124, 108, 255, 0.09), transparent 55%),
       radial-gradient(800px 800px at 50% 120%, rgba(52, 211, 153, 0.05), transparent 60%),
@@ -60,22 +63,15 @@
     background-attachment: fixed;
   }
   
-  /* film grain — kills the flat-gradient look.
-     user-select:none is load-bearing: a fixed, full-viewport pseudo-element
-     gets included in a text selection range, and ::selection then paints a
-     band of highlight across the entire window. */
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    -webkit-user-select: none; user-select: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-    opacity: 0.028;
-  }
-  
   #root { position: relative; z-index: 1; }
   
   a { color: var(--chamber); }
-  ::selection { background: rgba(52, 211, 153, 0.30); color: #fff; }
+  [aria-hidden='true'],
+  .member::before, .pipe-seg::after, .btn::after {
+    -webkit-user-select: none; user-select: none;
+  }
+  ::selection { background: #34d399; color: #06251a; }
+  ::selection img, img::selection { background: transparent; }
   :focus-visible { outline: 2px solid var(--chamber); outline-offset: 2px; border-radius: 4px; }
   
   .shell {
@@ -670,7 +666,6 @@
   
     html, body { background: #fff !important; color: #111 !important; }
     body { font-size: 10.5pt; line-height: 1.55; }
-    body::before { display: none !important; }        /* grain */
   
     /* screen-only chrome */
     .orb, .masthead, .session-footer, .pipe, .status-line,
