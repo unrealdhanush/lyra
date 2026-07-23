@@ -507,13 +507,20 @@
   .pipe {
     display: grid; grid-template-columns: repeat(4, 1fr);
     margin: 26px 0 38px;
+    /* node radius + breathing gap: segments run border-to-border, never
+       into a node's center (visible through the translucent active fill) */
+    --pipe-r: 12px;
+    --pipe-gap: 5px;
   }
   .pipe-stage { position: relative; text-align: center; padding-top: 30px; }
   
-  /* connector into this node */
+  /* connector into this node — starts past the previous node's edge,
+     ends before this node's edge */
   .pipe-seg {
-    position: absolute; top: 11px; right: 50%; left: -50%; height: 2px;
-    background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden;
+    position: absolute; top: 11px; height: 2px;
+    right: calc(50% + var(--pipe-r) + var(--pipe-gap));
+    left: calc(-50% + var(--pipe-r) + var(--pipe-gap));
+    background: rgba(255, 255, 255, 0.1); border-radius: 99px; overflow: hidden;
   }
   .pipe-seg.done { background: linear-gradient(90deg, var(--chamber-deep), var(--chamber)); }
   .pipe-seg.active { background: rgba(255, 255, 255, 0.1); }
