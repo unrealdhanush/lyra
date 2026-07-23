@@ -57,7 +57,7 @@ export default function App() {
               </button>
             )}
             {admin && <Link to="/admin">bench</Link>}
-            <Link to="/docket">docket</Link>
+            <Link to="/docket">DOCKET</Link>
             {/* <a href="https://github.com/unrealdhanush/lyra" target="_blank" rel="noreferrer">source</a> */}
           </nav>
         </div>
