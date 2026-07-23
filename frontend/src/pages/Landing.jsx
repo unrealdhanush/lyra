@@ -31,10 +31,10 @@ const MEMBERS = [
 ];
 
 const STEPS = [
-  { n: '01', t: 'State your idea', d: 'Who it\u2019s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
+  { n: '01', t: 'State your idea', d: 'Who it\'s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
   { n: '02', t: 'The panel deliberates', d: 'Four advisors assess it in parallel, each from their own mandate. You watch them land one by one.' },
-  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\u2019 arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
-  { n: '04', t: 'The chair rules', d: 'A verdict that commits \u2014 build, test first, reshape, or walk away \u2014 with falsifiable tests you can run in a week.' },
+  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\' arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
+  { n: '04', t: 'The chair rules', d: 'A verdict that commits \- build, test first, reshape, or walk away with falsifiable tests you can run in a week.' },
 ];
 
 export default function Landing() {
@@ -70,12 +70,12 @@ export default function Landing() {
           <h2 className="lp-h2">Four advisors who disagree on purpose.</h2>
           <p className="lp-sub">
             Each one optimizes for a single thing and is forbidden from caring about
-            the rest. That tension is the design \u2014 it\u2019s what stops four models
+            the rest. That tension is the design - it's what stops four models
             agreeing with you in four different ways.
           </p>
           {panel && (
             <p className="panel-note">
-              Four different model families, on purpose \u2014 four checkpoints of one
+              Four different model families, on purpose - four checkpoints of one
               family produce correlated errors and a peer review that rubber-stamps
               itself. The chair is <b>{shortModel(panel.chairman.primary)}</b>, the
               strongest of the five, because synthesizing across conflicting
@@ -128,14 +128,14 @@ export default function Landing() {
       <section className="lp-section lp-promise">
         <Reveal>
         <div className="kicker">The rule that makes it trustworthy</div>
-        <h2 className="lp-h2">It won\u2019t make up numbers to sound sure.</h2>
+        <h2 className="lp-h2">It won't make up numbers to sound sure.</h2>
         <p className="lp-sub">
           Advisors may only cite figures that appear in the case record. During blind
-          peer review each one checks the others\u2019 numbers against it, and anything
+          peer review each one checks the others' numbers against it, and anything
           two or more reviewers flag as unsupported is struck from the ruling
-          entirely \u2014 not softened into it. Today the record starts empty, so
+          entirely - not softened into it. Today the record starts empty, so
           invented figures have nowhere to hide. Sourced competitor dossiers are
-          what\u2019s next.
+          what's next.
         </p>
         <Link to="/new" className="btn btn-lg">Put an idea on trial &rarr;</Link>
         </Reveal>
