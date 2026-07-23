@@ -48,6 +48,12 @@ export const deleteRun = (slug) =>
 
 export const getPanel = () => req('/api/panel');
 
+export const getRoster = () => req('/api/admin/roster');
+export const getModelCatalog = () => req('/api/admin/models');
+export const saveRoster = (roster) =>
+  req('/api/admin/roster', { method: 'PUT', body: JSON.stringify({ roster }) });
+export const resetRoster = () => req('/api/admin/roster', { method: 'DELETE' });
+
 const DONE = new Set(['complete', 'failed']);
 
 /** Polls the run every 2.5s until it completes or fails. At 60-90s run

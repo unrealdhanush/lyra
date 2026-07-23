@@ -19,10 +19,12 @@ import hashlib
 import hmac
 import os
 import secrets
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
+import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,7 +33,14 @@ from supabase import Client, create_client
 
 from council.models import Dossier
 from council.models import ADVISOR_ROLES
-from council.orchestrator import MODELS, SpendCapError, preflight, run_council
+from council.orchestrator import (
+    DEFAULT_MODELS,
+    MODELS,
+    SpendCapError,
+    preflight,
+    refresh_roster,
+    run_council,
+)
 from council.prompts import ROLES
 
 # Resolved relative to this file, so it works no matter which directory you
@@ -158,6 +167,7 @@ class SubmitBody(BaseModel):
 @app.post("/api/ideas")
 async def submit_idea(body: SubmitBody, request: Request):
     db = _db()
+    await asyncio.to_thread(refresh_roster, db)  # pre-flight uses the live bench too
     api_key, paid_by = _resolve_key(body.byok_key)
     gate = _gate_hash(request)
 
@@ -353,8 +363,10 @@ async def gallery(request: Request, scope: str = "public"):
 
 @app.get("/api/panel")
 async def panel():
-    """Who staffs each seat. Read live from the orchestrator config so the
-    landing page can never claim a model the council isn't actually using."""
+    """Who staffs each seat. Reads the LIVE bench (defaults + any admin
+    override) so the landing page can never claim a model the council isn't
+    actually using."""
+    await asyncio.to_thread(refresh_roster, _db())
     return {
         "advisors": [
             {
@@ -368,6 +380,95 @@ async def panel():
         "chairman": {"primary": MODELS["chairman"][0], "fallbacks": MODELS["chairman"][1:]},
         "preflight": {"primary": MODELS["preflight"][0], "fallbacks": MODELS["preflight"][1:]},
     }
+
+
+# ---------------------------------------------------------------------------
+# The bench — live model roster (admin only)
+# ---------------------------------------------------------------------------
+
+_CATALOG: dict = {"ts": 0.0, "ids": []}
+
+
+async def _model_catalog() -> list[str]:
+    """OpenRouter's live model list, cached 10 minutes. Feeding the bench UI
+    from this — and validating saves against it — makes stale model IDs
+    structurally impossible instead of merely fixable."""
+    if _CATALOG["ids"] and time.monotonic() - _CATALOG["ts"] < 600:
+        return _CATALOG["ids"]
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            "https://openrouter.ai/api/v1/models",
+            headers={"Authorization": f"Bearer {os.environ['HOST_OPENROUTER_KEY']}"},
+            timeout=20.0,
+        )
+        r.raise_for_status()
+        items = r.json().get("data", [])
+    _CATALOG["ids"] = sorted({m.get("id") for m in items if m.get("id")})
+    _CATALOG["ts"] = time.monotonic()
+    return _CATALOG["ids"]
+
+
+@app.get("/api/admin/models")
+async def admin_models(request: Request):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin token required.")
+    return {"models": await _model_catalog()}
+
+
+@app.get("/api/admin/roster")
+async def get_roster(request: Request):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin token required.")
+    await asyncio.to_thread(refresh_roster, _db())
+    return {"active": MODELS, "defaults": DEFAULT_MODELS}
+
+
+class RosterBody(BaseModel):
+    roster: dict[str, list[str]]
+
+
+@app.put("/api/admin/roster")
+async def put_roster(body: RosterBody, request: Request):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin token required.")
+
+    clean: dict[str, list[str]] = {}
+    for seat, chain in body.roster.items():
+        if seat not in DEFAULT_MODELS:
+            raise HTTPException(422, f"Unknown seat: {seat}")
+        ids = [m.strip() for m in chain if isinstance(m, str) and m.strip()]
+        if not ids:
+            raise HTTPException(422, f"{seat} needs at least one model.")
+        clean[seat] = ids[:4]
+
+    # Reject anything OpenRouter doesn't currently list. If the catalog is
+    # unreachable, save anyway — a validation outage must not lock the bench.
+    try:
+        catalog = set(await _model_catalog())
+        unknown = sorted({m for chain in clean.values() for m in chain} - catalog)
+        if unknown:
+            raise HTTPException(
+                422, f"Not in OpenRouter's catalog: {', '.join(unknown)}"
+            )
+    except HTTPException:
+        raise
+    except Exception as err:  # noqa: BLE001
+        print(f"[roster] catalog validation skipped: {err}", flush=True)
+
+    db = _db()
+    db.table("app_config").upsert({"key": "model_roster", "value": clean}).execute()
+    await asyncio.to_thread(refresh_roster, db)
+    return {"active": MODELS}
+
+
+@app.delete("/api/admin/roster")
+async def reset_roster(request: Request):
+    if not _is_admin(request):
+        raise HTTPException(403, "Admin token required.")
+    db = _db()
+    db.table("app_config").delete().eq("key", "model_roster").execute()
+    await asyncio.to_thread(refresh_roster, db)
+    return {"active": MODELS}
 
 
 @app.get("/api/health")

@@ -4,6 +4,7 @@ import Landing from './pages/Landing.jsx';
 import Submit from './pages/Submit.jsx';
 import Run from './pages/Run.jsx';
 import Gallery from './pages/Gallery.jsx';
+import Bench from './pages/Bench.jsx';
 import { ADMIN_KEY } from './api';
 
 /** Visit /?admin=<token> once to enable unlimited runs in this browser;
@@ -55,6 +56,7 @@ export default function App() {
                 admin
               </button>
             )}
+            {admin && <Link to="/admin">bench</Link>}
             <Link to="/docket">docket</Link>
             <a href="https://github.com/unrealdhanush/lyra" target="_blank" rel="noreferrer">source</a>
           </nav>
@@ -67,6 +69,7 @@ export default function App() {
           <Route path="/new" element={<Measure><Submit /></Measure>} />
           <Route path="/r/:slug" element={<Measure><Run /></Measure>} />
           <Route path="/docket" element={<Measure><Gallery /></Measure>} />
+          <Route path="/admin" element={<Measure><Bench /></Measure>} />
         </Routes>
       </main>
     </>

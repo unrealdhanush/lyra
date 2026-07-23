@@ -60,7 +60,10 @@ from .prompts import (
 # unverified IDs and it dropped out of a live run entirely.
 SAFETY_NET = "anthropic/claude-haiku-4.5"
 
-MODELS: dict[str, list[str]] = {
+# Code defaults. The LIVE roster is MODELS below, which merges any admin
+# override stored in Supabase (app_config / 'model_roster') at the start of
+# every run — the bench can be re-seated without a redeploy.
+DEFAULT_MODELS: dict[str, list[str]] = {
     "operator":    ["openai/gpt-5.1-mini", "google/gemini-3-flash", SAFETY_NET],
     "gravedigger": ["google/gemini-3-flash", "openai/gpt-5.1-mini", SAFETY_NET],
     "distributor": ["anthropic/claude-haiku-4.5", "google/gemini-3-flash", SAFETY_NET],
@@ -68,6 +71,30 @@ MODELS: dict[str, list[str]] = {
     "chairman":    ["anthropic/claude-sonnet-4.6", "openai/gpt-5.1", "anthropic/claude-sonnet-4.5"],
     "preflight":   ["google/gemini-3-flash-lite", "openai/gpt-4.1-nano", SAFETY_NET],
 }
+
+# Active roster. Mutated IN PLACE by refresh_roster() so every existing call
+# site (MODELS[role]) sees overrides without threading a parameter through.
+MODELS: dict[str, list[str]] = {k: list(v) for k, v in DEFAULT_MODELS.items()}
+
+
+def refresh_roster(db) -> None:
+    """Merge the admin override (if any) over code defaults. Unknown seats
+    and malformed chains are ignored rather than fatal — a bad override must
+    degrade to defaults, never take the council down."""
+    merged = {k: list(v) for k, v in DEFAULT_MODELS.items()}
+    try:
+        res = db.table("app_config").select("value").eq("key", "model_roster").execute()
+        if res.data:
+            override = res.data[0].get("value") or {}
+            for seat, chain in override.items():
+                if seat in merged and isinstance(chain, list):
+                    clean = [m.strip() for m in chain if isinstance(m, str) and m.strip()]
+                    if clean:
+                        merged[seat] = clean
+    except Exception as err:  # noqa: BLE001
+        print(f"[roster] override load failed, using defaults: {err}", flush=True)
+    MODELS.clear()
+    MODELS.update(merged)
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -448,6 +475,7 @@ async def _synthesize(
 
 async def run_council(run_id: str, idea: str, dossier: Dossier, api_key: str) -> None:
     db = _db()
+    await asyncio.to_thread(refresh_roster, db)  # bench changes apply per-run
     try:
         async with httpx.AsyncClient() as client:
             opinions = await _deliberate(client, db, run_id, idea, dossier, api_key)
