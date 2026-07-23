@@ -54,13 +54,19 @@ from .prompts import (
 #
 # VERIFY these IDs and prices against openrouter.ai/models before launch —
 # model names and rates drift, and some of these may be stale.
+# Every chain ENDS in a model known to work. A stale or renamed ID then
+# degrades that seat's quality instead of deleting the seat from the panel —
+# which is what happened when the Gravedigger's chain contained only
+# unverified IDs and it dropped out of a live run entirely.
+SAFETY_NET = "anthropic/claude-haiku-4.5"
+
 MODELS: dict[str, list[str]] = {
-    "operator":    ["openai/gpt-5.1-mini", "anthropic/claude-haiku-4.5"],
-    "gravedigger": ["google/gemini-3-flash", "openai/gpt-5.1-mini"],
-    "distributor": ["anthropic/claude-haiku-4.5", "google/gemini-3-flash"],
-    "why_now":     ["deepseek/deepseek-chat-v3.1", "openai/gpt-5.1-mini"],
-    "chairman":    ["anthropic/claude-sonnet-4.6", "openai/gpt-5.1"],
-    "preflight":   ["google/gemini-3-flash-lite", "openai/gpt-4.1-nano"],
+    "operator":    ["openai/gpt-5.1-mini", "google/gemini-3-flash", SAFETY_NET],
+    "gravedigger": ["google/gemini-3-flash", "openai/gpt-5.1-mini", SAFETY_NET],
+    "distributor": ["anthropic/claude-haiku-4.5", "google/gemini-3-flash", SAFETY_NET],
+    "why_now":     ["deepseek/deepseek-chat-v3.1", "openai/gpt-5.1-mini", SAFETY_NET],
+    "chairman":    ["anthropic/claude-sonnet-4.6", "openai/gpt-5.1", "anthropic/claude-sonnet-4.5"],
+    "preflight":   ["google/gemini-3-flash-lite", "openai/gpt-4.1-nano", SAFETY_NET],
 }
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -154,6 +160,9 @@ async def call_json(
         except SpendCapError:
             raise
         except Exception as err:  # noqa: BLE001 — fall through to next model
+            # Printed, not swallowed: a silently-failing primary model looks
+            # identical to a working one until a whole seat disappears.
+            print(f"[council] {model} failed: {type(err).__name__}: {err}", flush=True)
             last_err = err
 
     raise last_err or RuntimeError("all models failed")

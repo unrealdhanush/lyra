@@ -60,18 +60,26 @@ function Ruling({ verdict }) {
       {(v.discarded_claims?.length > 0 || v.data_gaps?.length > 0) && (
         <section className="record-notes">
           {v.discarded_claims?.length > 0 && (
-            <p>
+            <div className="note-block">
               <span className="label">Struck from the record</span>
-              {v.discarded_claims.map((c, i) => (
-                <span key={i} className="flagged">{c}</span>
-              ))}
-            </p>
+              <ul className="struck-list">
+                {v.discarded_claims.map((c, i) => (
+                  <li key={i}>
+                    <span className="flagged">{c}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
           {v.data_gaps?.length > 0 && (
-            <p>
+            <div className="note-block">
               <span className="label">What couldn't be established</span>
-              {v.data_gaps.join(' · ')}
-            </p>
+              <ul className="gap-list">
+                {v.data_gaps.map((g, i) => (
+                  <li key={i}>{g}</li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       )}
