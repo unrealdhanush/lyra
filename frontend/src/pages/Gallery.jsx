@@ -93,9 +93,20 @@ export default function Gallery() {
       )}
 
       {rows.length === 0 && !updating && (
-        <p style={{ color: 'var(--ink-2)' }}>
-          {showAll ? 'No sessions at all yet.' : 'Nothing on the docket yet. Yours could be first.'}
-        </p>
+        <div className="empty-docket">
+          <span className="empty-stamp">Docket clear</span>
+          <p className="empty-title">
+            {showAll ? 'No sessions in the record.' : 'No published rulings yet.'}
+          </p>
+          <p className="empty-sub">
+            {showAll
+              ? 'Every session ever run appears in this view \u2014 unlisted, failed, and in-flight included.'
+              : 'Run an idea through the tribunal, then choose to publish the ruling. The first case on the record could be yours.'}
+          </p>
+          {!showAll && (
+            <Link to="/new" className="btn">Put an idea on trial &rarr;</Link>
+          )}
+        </div>
       )}
 
       <div className={`docket-list${updating ? ' updating' : ''}`} aria-busy={updating}>

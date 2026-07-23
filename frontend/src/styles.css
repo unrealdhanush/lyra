@@ -911,3 +911,26 @@
      unmounting into a loading screen */
   .docket-list { transition: opacity 0.25s var(--ease); }
   .docket-list.updating { opacity: 0.55; pointer-events: none; }
+  
+  /* empty state — a distinct object, not another gray sentence */
+  .empty-docket {
+    border: 1px dashed var(--glass-border); border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    text-align: center; padding: 52px 28px; margin-top: 6px;
+  }
+  .empty-stamp {
+    display: inline-block; font-family: var(--mono); font-size: 11.5px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--chamber);
+    border: 1.5px solid rgba(52, 211, 153, 0.5); border-radius: 5px;
+    padding: 4px 12px; transform: rotate(-1.2deg);
+    background: rgba(0, 0, 0, 0.25);
+  }
+  .empty-title {
+    font-family: var(--serif); font-size: 22px; font-weight: 500;
+    margin: 16px 0 6px;
+  }
+  .empty-sub {
+    color: var(--ink-3); font-size: 14.5px; line-height: 1.6;
+    max-width: 46ch; margin: 0 auto;
+  }
+  .empty-docket .btn { margin-top: 22px; }
