@@ -60,10 +60,14 @@
     background-attachment: fixed;
   }
   
-  /* film grain — kills the flat-gradient look */
+  /* film grain — kills the flat-gradient look.
+     user-select:none is load-bearing: a fixed, full-viewport pseudo-element
+     gets included in a text selection range, and ::selection then paints a
+     band of highlight across the entire window. */
   body::before {
     content: '';
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    -webkit-user-select: none; user-select: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
     opacity: 0.028;
   }
@@ -71,7 +75,7 @@
   #root { position: relative; z-index: 1; }
   
   a { color: var(--chamber); }
-  ::selection { background: rgba(52, 211, 153, 0.28); }
+  ::selection { background: rgba(52, 211, 153, 0.30); color: #fff; }
   :focus-visible { outline: 2px solid var(--chamber); outline-offset: 2px; border-radius: 4px; }
   
   .shell {
@@ -253,6 +257,7 @@
   .orb {
     position: absolute; border-radius: 50%; filter: blur(70px);
     pointer-events: none; z-index: -1;
+    -webkit-user-select: none; user-select: none;
   }
   .orb-a {
     width: clamp(320px, 34vw, 520px); height: clamp(320px, 34vw, 520px); top: -12%; right: -4%;
