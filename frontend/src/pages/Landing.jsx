@@ -60,7 +60,7 @@ export default function Landing() {
           <h2 className="lp-h2">Four advisors who disagree on purpose.</h2>
           <p className="lp-sub">
             Each one optimizes for a single thing and is forbidden from caring about
-            the rest. That tension is the design \u2014 it\u2019s what stops four models
+            the rest. That tension is the design - it's what stops four models
             agreeing with you in four different ways.
           </p>
         </Reveal>
@@ -100,7 +100,7 @@ export default function Landing() {
       <section className="lp-section lp-promise">
         <Reveal>
         <div className="kicker">The rule that makes it trustworthy</div>
-        <h2 className="lp-h2">It won\u2019t make up numbers to sound sure.</h2>
+        <h2 className="lp-h2">It won't make up numbers to sound sure.</h2>
         <p className="lp-sub">
           Facts and judgment run on separate tracks. Any figure an advisor cites
           is checked against sourced data during peer review; anything unverifiable
