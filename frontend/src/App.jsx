@@ -58,7 +58,7 @@ export default function App() {
             )}
             {admin && <Link to="/admin">bench</Link>}
             <Link to="/docket">docket</Link>
-            <a href="https://github.com/unrealdhanush/lyra" target="_blank" rel="noreferrer">source</a>
+            {/* <a href="https://github.com/unrealdhanush/lyra" target="_blank" rel="noreferrer">source</a> */}
           </nav>
         </div>
       </header>
