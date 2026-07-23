@@ -61,18 +61,22 @@ export default function Gallery() {
       </div>
 
       {isAdmin && (
-        <div className="docket-tools">
+        <div className="scope-seg" role="tablist" aria-label="Docket scope">
           <button
-            className={`scope-btn${!showAll ? ' on' : ''}`}
+            role="tab"
+            aria-selected={!showAll}
+            className={`seg${!showAll ? ' on' : ''}`}
             onClick={() => setShowAll(false)}
           >
-            public docket
+            Public docket
           </button>
           <button
-            className={`scope-btn${showAll ? ' on' : ''}`}
+            role="tab"
+            aria-selected={showAll}
+            className={`seg${showAll ? ' on' : ''}`}
             onClick={() => setShowAll(true)}
           >
-            all sessions
+            All sessions
           </button>
         </div>
       )}
@@ -100,9 +104,17 @@ export default function Gallery() {
               </div>
             )}
             <div className="g-meta">
-              {new Date(r.created_at).toLocaleDateString()}
+              <span>
+                {new Date(r.created_at).toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
               {showAll && r.status !== 'complete' && (
-                <span className={`state-chip ${r.status === 'failed' ? 'bad' : ''}`}>{r.status}</span>
+                <span className={`state-chip ${r.status === 'failed' ? 'bad' : ''}`}>
+                  {r.status}
+                </span>
               )}
               {showAll && !r.is_public && <span className="state-chip">unlisted</span>}
             </div>
