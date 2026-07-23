@@ -1,3 +1,42 @@
+import { useEffect, useRef, useState } from 'react';
+
+/** Scroll-triggered reveal. Children rise in when they enter the viewport;
+ * renders instantly for prefers-reduced-motion. */
+export function Reveal({ children, delay = 0, className = '' }) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShown(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`${className} rv${shown ? ' rv-in' : ''}`.trim()}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
 export const ROLE_META = {
   operator: {
     title: 'The Operator',

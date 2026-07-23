@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Reveal } from '../components.jsx';
 
 const MEMBERS = [
   {
@@ -28,16 +29,18 @@ const MEMBERS = [
 ];
 
 const STEPS = [
-  { n: '01', t: 'State your idea', d: 'Who it\'s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
+  { n: '01', t: 'State your idea', d: 'Who it\u2019s for, the problem, roughly how. Too thin to judge? The panel asks two sharp questions before spending your session.' },
   { n: '02', t: 'The panel deliberates', d: 'Four advisors assess it in parallel, each from their own mandate. You watch them land one by one.' },
-  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\' arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
-  { n: '04', t: 'The chair rules', d: 'A verdict that commits, build, test first, reshape, or walk away with falsifiable tests you can run in a week.' },
+  { n: '03', t: 'They rank each other, blind', d: 'Every advisor rates the others\u2019 arguments without knowing who wrote what. Any invented number gets flagged and struck.' },
+  { n: '04', t: 'The chair rules', d: 'A verdict that commits \u2014 build, test first, reshape, or walk away \u2014 with falsifiable tests you can run in a week.' },
 ];
 
 export default function Landing() {
   return (
     <>
       <section className="lp-hero">
+        <div className="orb orb-a" aria-hidden="true" />
+        <div className="orb orb-b" aria-hidden="true" />
         <div className="acronym-line">
           <b>L</b>itigate <b>Y</b>our <b>R</b>iskiest <b>A</b>ssumptions
         </div>
@@ -52,43 +55,52 @@ export default function Landing() {
       </section>
 
       <section className="lp-section">
-        <div className="kicker">The panel</div>
-        <h2 className="lp-h2">Four advisors who disagree on purpose.</h2>
-        <p className="lp-sub">
-          Each one optimizes for a single thing and is forbidden from caring about
-          the rest. That tension is the design: it's what stops four models
-          agreeing with you in four different ways.
-        </p>
+        <Reveal>
+          <div className="kicker">The panel</div>
+          <h2 className="lp-h2">Four advisors who disagree on purpose.</h2>
+          <p className="lp-sub">
+            Each one optimizes for a single thing and is forbidden from caring about
+            the rest. That tension is the design \u2014 it\u2019s what stops four models
+            agreeing with you in four different ways.
+          </p>
+        </Reveal>
         <div className="member-grid">
-          {MEMBERS.map((m) => (
-            <article className="member" key={m.name}>
-              <h3>{m.name}</h3>
-              <p className="member-q">{m.q}</p>
-              <p className="member-body">{m.body}</p>
-              <p className="member-ignores">{m.ignores}</p>
-            </article>
+          {MEMBERS.map((m, i) => (
+            <Reveal key={m.name} delay={i * 90}>
+              <article className="member">
+                <h3>{m.name}</h3>
+                <p className="member-q">{m.q}</p>
+                <p className="member-body">{m.body}</p>
+                <p className="member-ignores">{m.ignores}</p>
+              </article>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="lp-section">
-        <div className="kicker">How a session works</div>
+        <Reveal>
+          <div className="kicker">How a session works</div>
+        </Reveal>
         <div className="steps">
-          {STEPS.map((s) => (
-            <div className="step" key={s.n}>
-              <span className="step-n">{s.n}</span>
-              <div>
-                <div className="step-t">{s.t}</div>
-                <div className="step-d">{s.d}</div>
+          {STEPS.map((s, i) => (
+            <Reveal key={s.n} delay={i * 80}>
+              <div className="step">
+                <span className="step-n">{s.n}</span>
+                <div>
+                  <div className="step-t">{s.t}</div>
+                  <div className="step-d">{s.d}</div>
+                </div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="lp-section lp-promise">
+        <Reveal>
         <div className="kicker">The rule that makes it trustworthy</div>
-        <h2 className="lp-h2">It won't make up numbers to sound sure.</h2>
+        <h2 className="lp-h2">It won\u2019t make up numbers to sound sure.</h2>
         <p className="lp-sub">
           Facts and judgment run on separate tracks. Any figure an advisor cites
           is checked against sourced data during peer review; anything unverifiable
@@ -96,6 +108,7 @@ export default function Landing() {
           as empty, not padded with an invented total.
         </p>
         <Link to="/new" className="btn btn-lg">Put an idea on trial &rarr;</Link>
+        </Reveal>
       </section>
     </>
   );

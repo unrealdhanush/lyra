@@ -21,10 +21,15 @@ export default function Gallery() {
       {rows.length === 0 && (
         <p style={{ color: 'var(--ink-2)' }}>Nothing on the docket yet. Yours could be first.</p>
       )}
-      {rows.map((r) => {
+      {rows.map((r, i) => {
         const v = r.verdicts?.[0] || r.verdicts;
         return (
-          <Link className="gallery-row" to={`/r/${r.share_slug}`} key={r.share_slug}>
+          <Link
+            className="gallery-row"
+            to={`/r/${r.share_slug}`}
+            key={r.share_slug}
+            style={{ animationDelay: `${Math.min(i * 60, 480)}ms` }}
+          >
             <div className="g-idea">{r.idea_refined || r.idea_raw}</div>
             {v && (
               <div className="g-verdict">
