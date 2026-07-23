@@ -32,34 +32,43 @@ function useAdmin() {
   return { admin, clear };
 }
 
+/* Reading pages get a text measure; the landing uses the full canvas. */
+const Measure = ({ children }) => <div className="measure">{children}</div>;
+
 export default function App() {
   const { admin, clear } = useAdmin();
   return (
-    <div className="shell">
+    <>
+      {/* Full-bleed sticky chrome; only its CONTENTS are constrained. */}
       <header className="masthead">
-        <Link to="/" className="wordmark">
-          <span className="seal" />LYRA
-        </Link>
-        <nav>
-          {admin && (
-            <button
-              className="admin-chip"
-              onClick={clear}
-              title="Admin mode: unlimited runs. Click to sign out."
-            >
-              admin
-            </button>
-          )}
-          <Link to="/docket">docket</Link>
-          <a href="https://github.com/" target="_blank" rel="noreferrer">source</a>
-        </nav>
+        <div className="masthead-inner">
+          <Link to="/" className="wordmark">
+            <span className="seal" />LYRA
+          </Link>
+          <nav>
+            {admin && (
+              <button
+                className="admin-chip"
+                onClick={clear}
+                title="Admin mode: unlimited runs. Click to sign out."
+              >
+                admin
+              </button>
+            )}
+            <Link to="/docket">docket</Link>
+            <a href="https://github.com/unrealdhanush/lyra" target="_blank" rel="noreferrer">source</a>
+          </nav>
+        </div>
       </header>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/new" element={<Submit />} />
-        <Route path="/r/:slug" element={<Run />} />
-        <Route path="/docket" element={<Gallery />} />
-      </Routes>
-    </div>
+
+      <main className="shell">
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/new" element={<Measure><Submit /></Measure>} />
+          <Route path="/r/:slug" element={<Measure><Run /></Measure>} />
+          <Route path="/docket" element={<Measure><Gallery /></Measure>} />
+        </Routes>
+      </main>
+    </>
   );
 }
