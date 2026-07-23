@@ -640,6 +640,10 @@
       border-bottom: 1px solid #ccc; padding-bottom: 6pt; margin-bottom: 14pt;
     }
   
+    body { font-size: 10.5pt; line-height: 1.55; }
+    p, li { orphans: 3; widows: 3; }
+    .no-print { display: none !important; }
+  
     /* flatten every glass surface to paper */
     .glass, .adv, .case-box, .member, .clarify, .review-strip, .test-row, .ruling,
     .gallery-row {
@@ -649,13 +653,37 @@
       box-shadow: none !important;
       break-inside: avoid; page-break-inside: avoid;
     }
+  
+    /* Advisor cards routinely run longer than a page. Forcing them whole
+       produces near-blank pages, so let them flow — but never separate a
+       card's header from the first lines of its body. */
+    .adv {
+      break-inside: auto !important; page-break-inside: auto !important;
+    }
+    .adv summary { break-after: avoid-page; }
     .ruling::before { display: none !important; }
   
     h1, h2, h3, h4, .adv-role, .step-t { color: #111 !important; }
     .adv-argument, .adv-headline, .case-box p, .lp-sub, .review-body,
-    .record-notes, .gap-list li { color: #333 !important; }
-    .kicker, .label, .adv-meta, .adv-model, .test-row .meta,
+    .review-body p, .record-notes, .gap-list li,
+    .adv-unknowns ul, .adv-unknowns li, .g-verdict { color: #333 !important; }
+    .adv-concede, .review-note, .adv-charge { color: #555 !important; }
+    .kicker, .label, .adv-meta, .test-row .meta,
     .session-head .case-no { color: #777 !important; }
+  
+    /* summary chip duplicates the full model id printed in the card body */
+    .adv-model { display: none !important; }
+  
+    /* the blind-review fold prints as a section, not a widget */
+    .review-fold > summary {
+      list-style: none;
+      font-family: var(--mono); font-size: 9.5pt; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #777 !important;
+      margin-bottom: 6pt;
+    }
+    .review-fold > summary::marker { content: ''; }
+    .review-fold > summary::-webkit-details-marker { display: none; }
+    .review-body b { color: #111 !important; }
   
     .crux-pull { border-top: 1px solid #ccc !important; }
   

@@ -147,7 +147,11 @@ export default function Run() {
 
       <section className="panel">
         <div className="kicker">
-          {complete ? 'How each advisor ruled — tap to read' : 'The panel'}
+          {complete ? (
+            <>How each advisor ruled<span className="no-print"> — tap to read</span></>
+          ) : (
+            'The panel'
+          )}
         </div>
         {ROLE_ORDER.map((role) => (
           <AdvisorRow key={role} role={role} opinion={byRole[role]} live={live} />
