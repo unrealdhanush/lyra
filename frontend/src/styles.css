@@ -60,7 +60,11 @@
       radial-gradient(1000px 700px at 95% 15%, rgba(124, 108, 255, 0.09), transparent 55%),
       radial-gradient(800px 800px at 50% 120%, rgba(52, 211, 153, 0.05), transparent 60%),
       linear-gradient(180deg, var(--bg), var(--bg-2));
-    background-attachment: fixed;
+    /* NOT fixed-attachment: fixed multi-layer backgrounds force viewport-wide
+       repaints on selection/scroll in Chromium and can smear ::selection
+       across the whole row. Scroll attachment looks near-identical here. */
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    min-height: 100vh;
   }
   
   #root { position: relative; z-index: 1; }
@@ -71,7 +75,6 @@
     -webkit-user-select: none; user-select: none;
   }
   ::selection { background: #34d399; color: #06251a; }
-  ::selection img, img::selection { background: transparent; }
   :focus-visible { outline: 2px solid var(--chamber); outline-offset: 2px; border-radius: 4px; }
   
   .shell {
@@ -118,9 +121,11 @@
   .masthead {
     position: sticky; top: 0; z-index: 40;
     width: 100%;
-    background: rgba(11, 14, 20, 0.82);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    backdrop-filter: blur(22px) saturate(140%);
+    /* No backdrop-filter here on purpose: sticky + backdrop-filter means a
+       viewport-sized backdrop snapshot re-taken on every scroll frame — a
+       known Chromium artifact zone that can paint selection highlights
+       across the full row. At 0.94 opacity the frosted look barely changes. */
+    background: rgba(11, 14, 20, 0.94);
     border-bottom: 1px solid var(--rule);
   }
   .masthead-inner {
